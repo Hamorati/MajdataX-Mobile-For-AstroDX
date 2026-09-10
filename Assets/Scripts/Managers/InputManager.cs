@@ -90,6 +90,12 @@ namespace MajdataViewX.Managers
         }
         private void CheckScreenPos(Vector2 screenPos)
         {
+#if UNITY_ANDROID || MAJDATA_MOBILE_DEBUG
+            // 分屏模式：下半屏属于编辑器，触摸不进入游戏判定
+            if (MajdataViewX.Mobile.MobileLayout.InputGated &&
+                screenPos.y < MajdataViewX.Mobile.MobileLayout.GameAreaBottomPixels)
+                return;
+#endif
             var mainCamera = Camera.main;
             var pos = (Vector2)mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f));
 

@@ -1,4 +1,4 @@
-﻿using MajdataViewX.Base;
+using MajdataViewX.Base;
 using MajdataViewX.Types.Input;
 using System;
 using System.Collections.Generic;
@@ -506,7 +506,9 @@ namespace MajdataViewX.Notes.SlideUtils
             SLIDE_TABLE.Clear();
             WIFI_TABLE.Clear();
 
-            for (var diff = 2; diff <= 6; diff++)
+            // 直线 slide：生成全部有序键位对（diff 1..7 = 56 对），
+            // 含相邻与反方向段（如 2-1、1-8、4-2），与 AstroDX/SimaiSharp 无间隔限制一致
+            for (var diff = 1; diff <= 7; diff++)
             {
                 // 直线形
                 var path = SlidePathConstructor.BeginAt((int)SensorType.A1)

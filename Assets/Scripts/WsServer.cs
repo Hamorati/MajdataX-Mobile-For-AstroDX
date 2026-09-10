@@ -35,9 +35,11 @@ namespace MajdataViewX
         {
             QualitySettings.vSyncCount = 1;
 
+#if !UNITY_ANDROID
             webSocket = new WebSocketServer("ws://127.0.0.1:8083");
             webSocket.AddWebSocketService<MajdataWsService>("/majdata");
             webSocket.Start();
+#endif
             _lifetimeCancellationToken = this.GetCancellationTokenOnDestroy();
             ProcessQueue(_lifetimeCancellationToken).Forget();
             BroadcastHeartbeat(_lifetimeCancellationToken).Forget();

@@ -114,6 +114,23 @@ namespace MajdataViewX.Notes.Updaters
                 sort = (sortTime << 2) | 0x2,
             };
 
+            // 传感区锚定 slide 的启动拍 Touch：pad 内叠加星形（AstroDX touch_star 皮肤，MajdataX 星形素材）
+            // 与 pad 同 sort 值，但写入在后；稳定基数排序保证绘制在 pad 之上
+            if (touch.isSlideHead)
+            {
+                var starIdx = Interlocked.Increment(ref *TouchesWriteCountPtr) - 1;
+                touchesRender[starIdx] = new SimpleRenderData
+                {
+                    pos = centerPos,
+                    angRad = 0,
+                    scale = new float2(0.6f, 0.6f),
+                    spriteId = touch.headStarSprite,
+                    color = new float4(1, 1, 1, touch.fanAlpha),
+                    brightness = 1f,
+                    sort = (sortTime << 2) | 0x2,
+                };
+            }
+
             if (timing > -0.02f)
             {
                 var justIdx = Interlocked.Increment(ref *TouchesWriteCountPtr) - 1;
@@ -201,6 +218,22 @@ namespace MajdataViewX.Notes.Updaters
                 brightness = 1f,
                 sort = (sortTime << 2) | 0x2,
             };
+
+            // 传感区锚定 slide 的启动拍 Touch：pad 内叠加星形（AstroDX touch_star 皮肤，MajdataX 星形素材）
+            if (touch.isSlideHead)
+            {
+                var starIdx = Interlocked.Increment(ref *TouchesWriteCountPtr) - 1;
+                touchesRender[starIdx] = new SimpleRenderData
+                {
+                    pos = centerPos,
+                    angRad = 0,
+                    scale = new float2(0.6f, 0.6f),
+                    spriteId = touch.headStarSprite,
+                    color = new float4(1, 1, 1, touch.fanAlpha),
+                    brightness = 1f,
+                    sort = (sortTime << 2) | 0x2,
+                };
+            }
 
             if (timing > -0.02f)
             {

@@ -1,0 +1,31 @@
+// 与 Unity 6000.3 的 AGP 版本保持一致（9.0.0）
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:9.0.0'
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.majdata.mobilepicker'
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 24
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // Unity 播放器类（仅编译用）
+    compileOnly files('D:/Tools/Unity/6000.3.19f1/Editor/Data/PlaybackEngines/AndroidPlayer/Variations/il2cpp/Release/Classes/classes.jar')
+}

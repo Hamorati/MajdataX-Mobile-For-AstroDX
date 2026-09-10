@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 
 using MajdataViewX.Utils;
@@ -39,6 +39,21 @@ namespace MajdataViewX.Managers
 
         private Sprite? Bg { get; set; }
         private string? VideoUrl { get; set; }
+
+        /// <summary>显示内置默认背景（移动端：谱面被删除或清空背景后调用）。</summary>
+        public void ShowDefaultBackground()
+        {
+            if (!hasBg && !hasVideo)
+                RefreshDefaultBg();
+        }
+
+        private void RefreshDefaultBg()
+        {
+            if (spriteRender == null) return;
+            spriteRender.sprite = defaultBg;
+            spriteRender.material = circledBgMaterial;
+            gameObject.transform.localScale = new Vector3(CIRCLED_SCALE_X, CIRCLED_SCALE_X, CIRCLED_SCALE_X);
+        }
 
         public static bool hasBg;
         public static bool hasVideo;

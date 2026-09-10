@@ -40,6 +40,8 @@ namespace MajdataViewX.Notes.Updaters
 
         public const float SlideOKKeepDuration = 17 * MajCtx.FRAME_LENGTH_SEC;
         public const float SlideOKFadeOutDuration = 8 * MajCtx.FRAME_LENGTH_SEC;
+        /// <summary>传感区 slide 前瞻跳区容忍预算（未按压即跳过的区数上限，对应 AstroDX slideTolerance）。</summary>
+        private const int SENSOR_SLIDE_TOLERANCE = 2;
         public void Execute(int index)
         {
             if (!TimeData.IsStart)
@@ -96,8 +98,15 @@ namespace MajdataViewX.Notes.Updaters
             {
                 //正常需要等待slideok显示完才可以死
                 //folded不需要显示直接死
-                if (slide.isFolded) EndNote(ref slide);
-                else RenderSlideOK(ref slide);
+                if (slide.isFolded) { EndNote(ref slide); return; }
+                if (slide.isSensorSlide)
+                {
+                    // 传感区 slide 不显示 slideOK：短暂停留后结束
+                    if (TimeData.NoteTime - slide.finishJudgeTiming > 10 * MajCtx.FRAME_LENGTH_SEC)
+                        EndNote(ref slide);
+                    return;
+                }
+                RenderSlideOK(ref slide);
                 return;
             }
 
@@ -183,6 +192,9 @@ namespace MajdataViewX.Notes.Updaters
         private void RenderStar(ref SlideData slide, int index, float timing, float tapTiming)
         {
             if (slide.isFolded) return;
+
+            // 触区锚定 slide：头部阶段（星星尚未离开起点）不显示星标，由头部 Touch 动画取代
+            if (slide.isTouchHeadSlide && slide.process <= 0f) return;
 
             // =====Star样式逻辑=====
             if (timing <= 0)
@@ -522,13 +534,16 @@ namespace MajdataViewX.Notes.Updaters
                     {
                         currentOn = first.SensorA;
                         changed = true;
-                        if (!hasSecond) cur++;  // 最后一个区不需要松手
+                        slide.missedCount = 0;
+                        // 传感区 slide：按压即推进（无需松开，与 AstroDX 触摸滑动一致）
+                        if (slide.isSensorSlide || !hasSecond) cur++;
                     }
                     else if (first.SensorB >= SensorType.A1 && InputData.GetSensorState(first.SensorB).Status)
                     {
                         currentOn = first.SensorB;
                         changed = true;
-                        if (!hasSecond) cur++;  // 最后一个区不需要松手
+                        slide.missedCount = 0;
+                        if (slide.isSensorSlide || !hasSecond) cur++;
                     }
                 }
                 else // 第一个区已经按下了
@@ -537,12 +552,18 @@ namespace MajdataViewX.Notes.Updaters
                     {
                         currentOn = SensorType.Invalid;
                         changed = true;
-                        cur++;
+                        // 传感区 slide 松开不推进（推进只发生在按压时）
+                        if (!slide.isSensorSlide) cur++;
                     }
                 }
 
                 // 然后看当前第二个区，注意当第一个区已经按下时一定可以跳区
                 var skippable = (cur != slide.unskippable1 && cur != slide.unskippable2 || currentOn >= SensorType.A1);
+                if (slide.isSensorSlide && currentOn <= SensorType.Invalid)
+                {
+                    // 传感区 slide：前瞻跳区受容忍预算限制（AstroDX slideTolerance 模型）
+                    skippable = slide.missedCount < SENSOR_SLIDE_TOLERANCE;
+                }
                 if (!changed && hasSecond && skippable)
                 {
                     var second = queue[cur + 1];
@@ -552,6 +573,7 @@ namespace MajdataViewX.Notes.Updaters
                     {
                         currentOn = second.SensorA;
                         changed = true;
+                        if (slide.isSensorSlide) slide.missedCount++;
                         cur++;
                         if (isSecondLast) cur++;  // 最后一个区不需要松手
                     }
@@ -562,6 +584,7 @@ namespace MajdataViewX.Notes.Updaters
                         {
                             currentOn = second.SensorB;
                             changed = true;
+                            if (slide.isSensorSlide) slide.missedCount++;
                             cur++;
                             if (isSecondLast) cur++;  // 最后一个区不需要松手
                         }

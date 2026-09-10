@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <!-- 自定义 launcher：继承 UnityPlayerActivity，负责 SAF 音频选择 -->
+        <activity
+            android:name="com.majdata.mobilepicker.MajdataActivity"
+            android:exported="true"
+            android:configChanges="fontScale|layoutDirection|density|keyboard|keyboardHidden|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/UnityThemeSelector">
+            <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+            <meta-data android:name="unityplayer.ForwardNativeEventsToDalvik" android:value="true" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 移除 Unity 默认活动的 LAUNCHER 入口（保留活动本身供 Unity 使用） -->
+        <activity
+            android:name="com.unity3d.player.UnityPlayerActivity"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter tools:node="removeAll">
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

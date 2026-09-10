@@ -10,6 +10,7 @@ using MajSimai;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -634,7 +635,8 @@ namespace MajdataViewX.Managers
             in SimaiTimingPoint timing,
             in SimaiNote note,
             bool isEach,
-            ref int sameTouchCount)
+            ref int sameTouchCount,
+            bool isSlideHead = false)
         {
             var sensor = GetSensor(note.TouchArea, note.StartPosition);
             var touch = new TouchData
@@ -649,6 +651,7 @@ namespace MajdataViewX.Managers
                 isEx = note.IsEx,
                 isBreak = note.IsBreak,
                 isMine = note.IsMine,
+                isSlideHead = isSlideHead,
                 usingSV = note.UsingSV,
 
                 isEnd = true
@@ -869,30 +872,61 @@ namespace MajdataViewX.Managers
             }
             else
             {
-                var slideMetaDatas = GetSlidesFromRawContent(noteContent, out var startPos, out var endPos);
-                metadata = slideMetaDatas.Count == 1 ? slideMetaDatas[0] : SlideTableNeo.MakeConnSlide(slideMetaDatas);
+                int startPos = 0, endPos = 0;
+                Complex startPoint = Complex.Zero;
+                SensorType headSensor = SensorType.Invalid;
+                List<SensorSlideBuilder.SensorSlideSeg> sensorSegs = new();
+                var isSensorSlide = note.IsSensorSlide &&
+                                    SensorSlideBuilder.TryParse(noteContent,
+                                        out headSensor, out startPos, out startPoint, out sensorSegs, out endPos);
+                if (note.IsSensorSlide && !isSensorSlide)
+                {
+                    // 传感 slide 解析失败：绝不回落到按钮 slide 渲染，直接报错跳过
+                    throw new InvalidOperationException($"Sensor slide parse failed: '{noteContent}'");
+                }
+                // 触区锚定 slide：头部为 Touch 音符（touch 动画与判定，取代星形头）
+                // 启动拍 Touch 使用特殊皮肤（pad 内星形，对应 AstroDX 的 touch_star）
+                var isTouchHeadSlide = isSensorSlide && note.TouchArea != ' ';
+                if (isTouchHeadSlide)
+                {
+                    var sameTouchCountLocal = 1;
+                    LoadTouch(in timing, in note, isNoteEach, ref sameTouchCountLocal, isSlideHead: true);
+                }
+                if (isSensorSlide)
+                {
+                    metadata = SensorSlideBuilder.Build(sensorSegs, headSensor, startPoint);
+                }
+                else
+                {
+                    var slideMetaDatas = GetSlidesFromRawContent(noteContent, out startPos, out endPos);
+                    metadata = slideMetaDatas.Count == 1 ? slideMetaDatas[0] : SlideTableNeo.MakeConnSlide(slideMetaDatas);
+                }
 
                 var unskippable1 = -1;
                 var unskippable2 = -1;
-                switch (metadata.Flag)
+                if (!isSensorSlide)
                 {
-                    case SlideFlag.NormalV:
-                        {
-                            unskippable1 = 1;
-                            break;
-                        }
-                    case SlideFlag.SpecialV:
-                        {
-                            unskippable1 = 1;
-                            unskippable2 = 3;
-                            break;
-                        }
-                    default:
-                        {
-                            if (metadata.JudgeAreaQueue.Length <= 3)
-                                unskippable1 = metadata.JudgeAreaQueue.Length - 2;
-                            break;
-                        }
+                    // 传感区 slide 全部区可跳过（按压即可推进，与 AstroDX 的交互模型一致）
+                    switch (metadata.Flag)
+                    {
+                        case SlideFlag.NormalV:
+                            {
+                                unskippable1 = 1;
+                                break;
+                            }
+                        case SlideFlag.SpecialV:
+                            {
+                                unskippable1 = 1;
+                                unskippable2 = 3;
+                                break;
+                            }
+                        default:
+                            {
+                                if (metadata.JudgeAreaQueue.Length <= 3)
+                                    unskippable1 = metadata.JudgeAreaQueue.Length - 2;
+                                break;
+                            }
+                    }
                 }
 
                 var judgeQueueCount = metadata.JudgeAreaQueue.Length;
@@ -911,6 +945,8 @@ namespace MajdataViewX.Managers
                     hspeed = timing.HSpeed,
 
                     isWifi = false,
+                    isSensorSlide = isSensorSlide,
+                    isTouchHeadSlide = isTouchHeadSlide,
 
                     judgeQueueOffset = areaPoolIndex,
                     judgeQueueCount = judgeQueueCount,

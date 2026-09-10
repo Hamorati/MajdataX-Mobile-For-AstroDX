@@ -1,4 +1,4 @@
-﻿using MajdataViewX.Base;
+using MajdataViewX.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -208,6 +208,74 @@ namespace MajdataViewX.Notes.SlideUtils
         public override double GetSegmentLength()
         {
             return Math.PI * Circle.Radius * 2.0;
+        }
+    }
+
+    /// <summary>
+    /// <p>slide 螺旋片段：角度与半径同时线性插值（复刻 AstroDX RingCw/RingCcwGenerator）。</p>
+    /// <p>用于判定圈（按键）与传感区之间半径变化的平滑过渡，长度公式 = 角度跨度 × 平均半径。</p>
+    /// <p>角度跨度 ≤ wrapThreshold 时加成整圈（AstroDX Trigonometry.GetAngleSpan 行为，默认 Tau/32）。</p>
+    /// </summary>
+    public class RingSegment : PathSegment
+    {
+        /// <summary>AstroDX GetAngleSpan 默认 wrap 阈值：Tau / 32。</summary>
+        public const double WrapThreshold = Math.PI / 16.0;
+
+        public readonly Complex StartPoint;
+        public readonly Complex EndPoint;
+        private readonly double _startR;
+        private readonly double _endR;
+        private readonly double _startA;
+        private readonly double _endA;
+
+        public RingSegment(Complex start, Complex end, bool isCcw, double wrapThreshold = WrapThreshold)
+        {
+            StartPoint = start;
+            EndPoint = end;
+            _startR = start.Magnitude;
+            _endR = end.Magnitude;
+            _startA = start.Phase;
+            var span = CalcSpan(start, end, isCcw, wrapThreshold);
+            _endA = _startA + (isCcw ? span : -span);
+        }
+
+        /// <summary>计算从 start 到 end 沿指定方向的归一化角度跨度（含 wrap 加成，与 AstroDX 一致）。</summary>
+        public static double CalcSpan(Complex start, Complex end, bool isCcw, double wrapThreshold = WrapThreshold)
+        {
+            var raw = isCcw ? end.Phase - start.Phase : start.Phase - end.Phase;
+            raw = Math.IEEERemainder(raw, Math.PI * 2.0);
+            if (raw < 0) raw += Math.PI * 2.0;
+            if (raw <= wrapThreshold) raw += Math.PI * 2.0;
+            return raw;
+        }
+
+        public override bool IsCurve { get; } = true;
+
+        public override Complex GetPointAt(double t)
+        {
+            var r = _startR + (_endR - _startR) * t;
+            var a = _startA + (_endA - _startA) * t;
+            return Complex.FromPolarCoordinates(r, a);
+        }
+
+        public override Complex GetTangentAt(double t)
+        {
+            var a = _startA + (_endA - _startA) * t;
+            var r = _startR + (_endR - _startR) * t;
+            var dr = _endR - _startR;
+            var da = _endA - _startA;
+            if (r < 1e-9 && Math.Abs(dr) < 1e-9)
+            {
+                return Complex.FromPolarCoordinates(1, a);
+            }
+            var tan = Complex.FromPolarCoordinates(dr, a) +
+                      Complex.FromPolarCoordinates(r, a) * Complex.ImaginaryOne * da;
+            return tan / tan.Magnitude;
+        }
+
+        public override double GetSegmentLength()
+        {
+            return Math.Abs(_endA - _startA) * (_startR + _endR) / 2.0;
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using MajdataViewX.Base;
+using MajdataViewX.Base;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -147,6 +147,20 @@ namespace MajdataViewX.Notes.SlideUtils
         public SlidePathConstructor ArcToAngle(int circleIdx, double endRad, bool isCcw, bool skipIfZero)
         {
             return ArcToAngle(MajGeo.GetCircle(circleIdx).Center, endRad, isCcw, skipIfZero);
+        }
+
+        /// <summary>
+        /// <p>添加一条螺旋片段前往指定点：角度与半径同时线性插值</p>
+        /// <p>复刻 AstroDX RingCw/RingCcwGenerator，用于判定圈与传感区之间半径变化的平滑过渡</p>
+        /// </summary>
+        /// <param name="point">目标点</param>
+        /// <param name="isCcw">true 为逆时针</param>
+        /// <returns><c>this</c></returns>
+        public SlidePathConstructor SpiralToPoint(Complex point, bool isCcw)
+        {
+            PathSegments.Add(new RingSegment(CurrentEndPoint, point, isCcw));
+            CurrentEndPoint = point;
+            return this;
         }
 
         /// <summary>

@@ -44,6 +44,12 @@ namespace MajdataViewX.Notes.NoteDatas
         //public bool usingSV;
 
         public bool isWifi;
+        /// <summary>传感区 slide（路径顶点含 A-E/C 传感区，或以传感区为头部锚点）</summary>
+        public bool isSensorSlide;
+        /// <summary>触区锚定 slide：头部为 Touch 音符（touch 动画/判定），头部阶段不显示星标</summary>
+        public bool isTouchHeadSlide;
+        /// <summary>传感区 slide 跳过的未按压区计数（AstroDX slideTolerance 预算）</summary>
+        public int missedCount;
 
         public bool isFolded;
         public bool hasSlideGuide;
@@ -125,6 +131,7 @@ namespace MajdataViewX.Notes.NoteDatas
             currentOn = SensorType.Invalid;
             currentOnL = SensorType.Invalid;
             currentOnR = SensorType.Invalid;
+            missedCount = 0;
 
             // 如果是 mine slide 就不要播放音效
             if (isMine)
@@ -221,6 +228,7 @@ namespace MajdataViewX.Notes.NoteDatas
             currentOn = SensorType.Invalid;
             currentOnL = SensorType.Invalid;
             currentOnR = SensorType.Invalid;
+            missedCount = default;
 
             isSoundPlayed = default;
             isJudged = default;

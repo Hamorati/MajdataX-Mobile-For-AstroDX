@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="preferExternal">
+    <application android:icon="@mipmap/app_icon" android:label="@string/app_name">
+        <!-- 移动端 launcher：继承 UnityPlayerActivity，提供 SAF 音频选择 -->
+        <activity
+            android:name="com.majdata.mobilepicker.MajdataActivity"
+            android:exported="true"
+            android:configChanges="fontScale|layoutDirection|density|keyboard|keyboardHidden|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/UnityThemeSelector">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+        </activity>
+
+        <!-- Unity 默认活动保留，但移除 library manifest 带来的 launcher 入口 -->
+        <activity
+            android:name="com.unity3d.player.UnityPlayerActivity"
+            android:exported="false"
+            android:theme="@style/UnityThemeSelector">
+            <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+            <intent-filter tools:node="removeAll" />
+        </activity>
+    </application>
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:anyDensity="true" />
+</manifest>

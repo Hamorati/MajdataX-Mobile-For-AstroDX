@@ -34,6 +34,12 @@ namespace MajdataViewX.Managers
         // 故 IsTrackLoaded 只取决于 Bass 流是否就绪
         public bool IsTrackLoaded => TrackSample != null;
 
+        /// <summary>当前曲目时长（秒，来自 BASS 流长度；未加载时为 null）。移动端时间轴用。</summary>
+        public double? TrackLengthSeconds => TrackSample?.Length;
+
+        /// <summary>当前音轨播放位置（秒；诊断用）。</summary>
+        public double? TrackPositionSeconds => TrackSample?.CurrentSec;
+
         //answer SFX gen
         private readonly List<AnswerTimingPoint> answerTimingPoints = new();
         private readonly object answerSfxLock = new();
@@ -96,6 +102,39 @@ namespace MajdataViewX.Managers
             SfxRequestsPtr = (bool*)noteSfxPlaybackRequests.GetUnsafePtr();
             Bass.Init(-1, SAMPLERATE);
 
+            LoadSfxFiles();
+
+            isInited = true;
+        }
+
+        /// <summary>解码整曲 PCM 并抽取为"原始波形折线"数据（有符号 −1~1，约 pointsPerSecond 点/秒；
+        /// 与原生 SimaiVisualizer 的 RawWave 折线画法一致：绿色折线、纵贯全高、垂直居中）。</summary>
+        public float[]? DecodeWaveform(string path, int pointsPerSecond)
+        {
+            try
+            {
+                var data = GetSampleDataFromFile(path);
+                if (data.Length < 4) return null;
+                var step = Math.Max(1, SAMPLERATE / pointsPerSecond); // 每 step 帧取一帧（左声道）
+                var count = (data.Length / 2) / step + 1;
+                var outData = new float[count];
+                for (var i = 0; i < count; i++)
+                {
+                    var src = Math.Min(i * step * 2, data.Length - 2);
+                    outData[i] = data[src];
+                }
+                Debug.Log($"[MB] wave decoded count={count} dataLen={data.Length} pps={pointsPerSecond}");
+                return outData;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[MB] wave decode error: {ex}");
+                return null;
+            }
+        }
+
+        private void LoadSfxFiles()
+        {
             //Note SFX
             var sfxPath = MajEnv.GetPath("SFX");
             int sfxIndex = 0;
@@ -119,7 +158,6 @@ namespace MajdataViewX.Managers
                     "all_perfect.wav"
                 })
             {
-                //sample
                 var path = Path.Combine(sfxPath, filename);
                 var type = filename switch
                 {
@@ -150,8 +188,6 @@ namespace MajdataViewX.Managers
                 //data
                 noteSfxSamplesData.Add(GetSampleDataFromFile(path));
             }
-
-            isInited = true;
         }
 
         public void Setting(double globalAudioOffset, MajVolumeSetting v)
