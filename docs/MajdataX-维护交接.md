@@ -76,6 +76,9 @@ Visual Studio 2022 打开 `D:\Workspace\src\MajdataEdit-Neo`，Release 构建；
    dotnet run --project D:\Workspace\tests\ViewXE2E -c Release --no-build -- D:\Workspace 2.zip 5
    ```
    依赖 `D:\Workspace\2.zip` 与 `D:\Workspace\analysis\2\track.mp3`（**不可删**）。
+   依赖已部署桌面版 `D:\Workspace\MajdataX`（2026-09-10 收尾时已删除；恢复方式：
+   `gh release download v1.0.0 --repo Hamorati/MajdataX-Desktop --dir D:\Workspace\build\rel`，
+   解压 zip 内容到 `D:\Workspace\MajdataX`；或重新 `BuildWindows64` 后把 `build\Win64\*` 部署到该目录）。
 3. **物量口径核验**：`dotnet run --project D:\Workspace\src\MajdataViewX\tools\CountCheck -- <maidata.txt>`，
    与渲染器 `ObjectCounter.CountNoteSum`（AstroDX 口径）比对。
 
@@ -89,11 +92,11 @@ Visual Studio 2022 打开 `D:\Workspace\src\MajdataEdit-Neo`，Release 构建；
 | `analysis\` | E2E 谱面 1-5、SlideTest、崩溃日志、`sym-x86_64` 符号表 | ❌ E2E 依赖 `analysis\2`；符号表用于 addr2line |
 | `2.zip`、`1-5.zip`、`*.mp4/png` 等根目录测试素材 | E2E/SlideTest 输入 | ❌ `2.zip` 必需，其余建议保留 |
 | `tools\` | 验证小工具（截图像素核验等） | 建议保留（共 5MB） |
-| `MajdataX\` | 已部署桌面版（E2E 直接可用） | 可删（可重建），保留则 E2E 立即可跑 |
-| `build\` | 构建产物/日志/截图（11.7GB） | ✅ 可删（成品已入 GitHub Releases；重建会再生成） |
-| `backup\` | 旧桌面二进制备份 | ✅ 可删（GitHub 成品替代） |
-| `astrodx-2.2.0.0023\` | AstroDX 参考副本 | ✅ 可删（与 `src\astrodx` 重复） |
-| 根目录 `LXGWWenKaiGB-Light.ttf` | 字体 | ✅ 可删（已内置进仓库 `Assets/Resources/Fonts/`） |
+| `MajdataX\` | 已部署桌面版（E2E 直接可用） | ✅ 已于 2026-09-10 删除（恢复：GitHub Release `MajdataX-Desktop-Release.zip` 解压，或重建部署） |
+| `build\` | 构建产物/日志/截图 | ✅ 已于 2026-09-10 删除（成品已入 GitHub Releases；下次构建自动重建） |
+| `backup\` | 旧桌面二进制备份 | ✅ 已删除 |
+| `astrodx-2.2.0.0023\` | AstroDX 参考副本 | ✅ 已删除（与 `src\astrodx` 重复） |
+| 根目录 `LXGWWenKaiGB-Light.ttf` | 字体 | ✅ 已删除（已内置进仓库 `Assets/Resources/Fonts/`） |
 
 ## 7. 常见坑（历次排障结论）
 
