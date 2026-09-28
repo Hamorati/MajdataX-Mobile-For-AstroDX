@@ -20,14 +20,19 @@
 
 ## 2. GitHub 归档（权威备份）
 
-| 仓库 | 内容 |
-|---|---|
-| https://github.com/Hamorati/MajdataX-Mobile | Unity 工程源码 + docs/ + tools/CountCheck + tests/（默认分支 master） |
-| https://github.com/Hamorati/MajdataX-Desktop | MajdataEdit-Neo 源码（默认分支 main） |
+> ⚠️ **两个仓库均已改名**（2026-09-29 实测核对）。旧 URL 仍可访问并由 GitHub **自动重定向**，所以 `git push ssh`、`gh release list` 等旧写法依旧可用、无需改配置：
+> - `Hamorati/MajdataX-Mobile` → **`Hamorati/MajdataX-Mobile-For-AstroDX`**
+> - `Hamorati/MajdataX-Desktop` → **`Hamorati/MajdataX-For-AstroDX`**
 
-- 成品：两个仓库的 Releases v1.0.0（`MajdataX-Mobile.apk` / `MajdataX-Desktop-Release.zip`）。
-- 本地仓库同时保有 `origin`（上游 re-poem 等）与 `ssh`（GitHub 个人仓库）两个 remote。
+| 仓库（新名；旧名可重定向） | 内容 |
+|---|---|
+| https://github.com/Hamorati/MajdataX-Mobile-For-AstroDX （旧 `MajdataX-Mobile`） | Unity 工程源码 + docs/ + tools/CountCheck + tests/（默认分支 master） |
+| https://github.com/Hamorati/MajdataX-For-AstroDX （旧 `MajdataX-Desktop`） | MajdataEdit-Neo 源码（默认分支 main） |
+
+- 成品：两个仓库的 Releases v1.0.0（`MajdataX-Mobile v1.0.0（AstroDX 对齐最终版）` / `MajdataX-Desktop v1.0.0（渲染器成品包）`，均发布于 2026-09-10）。
+- 本地仓库同时保有 `origin`（上游 re-poem 等）、`ssh` 与 `github`（GitHub 个人仓库；remote URL 仍写旧名，靠重定向工作）三个 remote。
 - **每次完成一批维护改动后，commit 并 push 回 GitHub**，保持远端为最新真相。
+- 推送命令：`$env:GIT_SSH_COMMAND="ssh -i D:/Tools/gh/id_ed25519 -o StrictHostKeyChecking=no"; git push ssh <branch>`（其他坑见 §7）。
 
 ## 3. 工具链（全部在 D:\Tools，不可删除）
 
