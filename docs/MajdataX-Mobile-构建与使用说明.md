@@ -1,5 +1,9 @@
 # MajdataX Mobile（Android 版 ViewX）构建与使用说明
 
+> **工作区根 = `D:\Workspace\PMXA\`**（2026-09 由旧的 `D:\Workspace\` 迁移而来）。
+> 工程位于 `D:\Workspace\PMXA\src\MajdataViewX`；构建日志/截图在 `D:\Workspace\PMXA\analysis\`；
+> `build\` 目录当前不存在，构建时自动重建。详见同目录《MajdataX-维护交接.md》。
+
 ## 一、产物
 
 - APK：`build\Android\MajdataX-Mobile.apk`（IL2CPP ARM64，minSdk 24 / Android 7.0+）
@@ -79,10 +83,10 @@ $env:MAJDATA_ANDROID_SDK = 'D:\Tools\AndroidSdk'
 $env:MAJDATA_ANDROID_NDK = 'D:\Tools\AndroidNdk\android-ndk-r27c'
 $env:MAJDATA_ANDROID_JDK = 'D:\Tools\Jdk\jdk-17.0.2'
 & 'D:\Tools\Unity\6000.3.19f1\Editor\Unity.exe' -batchmode -nographics -quit `
-  -projectPath 'D:\Workspace\src\MajdataViewX' `
+  -projectPath 'D:\Workspace\PMXA\src\MajdataViewX' `
   -executeMethod BuildScript.BuildAndroid `
-  -buildOutPath 'D:\Workspace\build\Android' `
-  -logFile 'D:\Workspace\analysis\unity-android-build.log'
+  -buildOutPath 'D:\Workspace\PMXA\build\Android' `
+  -logFile 'D:\Workspace\PMXA\analysis\unity-android-build.log'
 ```
 
 `BuildScript.BuildAndroid` 会自动：
