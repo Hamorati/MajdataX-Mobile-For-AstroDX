@@ -5,8 +5,8 @@
 
 > ## 工作区根 = `D:\Workspace\PMXA\`
 > 2026-09 由旧的 `D:\Workspace\` 整体迁移而来，本文档中的路径已全部同步。
-> - 现有目录：`src\`（源码仓库 + 现成构建产物）、`tests\`、`tools\`、`docs\`、`analysis\`（全部日志/截图/测试谱面 1-5）。
-> - **不存在**的目录：`build\`（构建产物根，下次构建自动重建）、`MajdataX\`（桌面部署目录，恢复方式见 §5）。
+> - 现有目录：`src\`（源码仓库 + 现成构建产物）、`tests\`、`tools\`、`docs\`、`analysis\`（全部日志/截图/测试谱面 1-5）、`MajdataX\`（桌面部署目录，**2026-09-29 已从 `Build\Win64` 恢复，E2E 实测 `E2E-OK`**）。
+> - **不存在**的目录：`build\`（构建产物根，下次构建自动重建）。
 > - 桌面版现成产物在 `src\MajdataViewX\Build\Win64\`（2026-09-10 构建，含 `MajdataViewX.exe` / `GameAssembly.dll` / `UnityPlayer.dll`），复制出来即可免重建使用。
 
 ## 1. 项目是什么
@@ -71,6 +71,7 @@ $env:MAJDATA_ANDROID_JDK="D:\Tools\Jdk\jdk-17.0.2"
   -buildOutPath D:\Workspace\PMXA\build\Win64 -logFile D:\Workspace\PMXA\analysis\unity-win.log
 ```
 部署：把 `build\Win64\*` 覆盖到 `D:\Workspace\PMXA\MajdataX`（先杀旧进程）。
+**部署时排除两个调试目录**：`MajdataViewX_BackUpThisFolder_ButDontShipItWithYourGame`（1.47GB IL2CPP 符号备份，只供崩溃 addr2line 用）与 `MajdataViewX_BurstDebugInformation_DoNotShip`——只复制运行时文件（约 168MB）。
 
 ### 桌面编辑器（WPF）
 Visual Studio 2022 打开 `D:\Workspace\PMXA\src\MajdataEdit-Neo`，Release 构建；产物 `bin\Release\...\MajdataEdit-Neo.exe`。
@@ -92,7 +93,7 @@ Visual Studio 2022 打开 `D:\Workspace\PMXA\src\MajdataEdit-Neo`，Release 构�
    ```
    - 谱面依赖：`D:\Workspace\PMXA\analysis\2\`（`maidata.txt` + `track.mp3`，**不可删**）。`analysis\1`~`5` 为历次 E2E/解析核验谱面，建议全部保留。
    - **命令里的 `2.zip` 只是标签参数**：`Program.cs` 用 `chartName.Replace(".zip","")` 定位 `analysis\2` 与截图名 `e2e-2.png`，**并不需要真实的 `2.zip` 文件**。旧根目录的 `2.zip`/`1-5.zip` 在 2026-09 迁移时已不存在，也无需恢复。
-   - 另需已部署桌面版 `D:\Workspace\PMXA\MajdataX`（`Program.cs:32` 要求 `<root>\MajdataX\MajdataViewX.exe`；该目录 2026-09-10 收尾时已删除）。恢复方式（任选其一）：
+   - 另需已部署桌面版 `D:\Workspace\PMXA\MajdataX`（`Program.cs:32` 要求 `<root>\MajdataX\MajdataViewX.exe`）。**该目录 2026-09-29 已恢复并通过 E2E**（复制 `src\MajdataViewX\Build\Win64\` 的运行时文件，168MB；身份 `app.info` = `bbben` / `MajdataViewX`；E2E 日志 `log lines=297 suspicious=0`）。若再次丢失，恢复方式（任选其一）：
      - **最快**：把现成产物 `D:\Workspace\PMXA\src\MajdataViewX\Build\Win64\*` 复制成 `D:\Workspace\PMXA\MajdataX\`，无需重新构建；
      - `gh release download v1.0.0 --repo Hamorati/MajdataX-Desktop --dir D:\Workspace\PMXA\build\rel`，解压 zip 内容到 `D:\Workspace\PMXA\MajdataX`；
      - 或重新 `BuildWindows64` 后把 `build\Win64\*` 部署到该目录。
@@ -109,7 +110,7 @@ Visual Studio 2022 打开 `D:\Workspace\PMXA\src\MajdataEdit-Neo`，Release 构�
 | `analysis\` | E2E 谱面 1-5、SlideTest、**全部构建/崩溃日志与截图**、`sym-x86_64` 符号表 | ❌ E2E 依赖 `analysis\2`；符号表用于 addr2line |
 | `tools\` | 验证小工具（截图像素核验等） | 建议保留（共 5MB） |
 | 旧根目录 `2.zip`/`1-5.zip`/`*.mp4/png` | 旧测试素材 | ✅ 已不存在（2026-09 迁移时清理）；谱面已解包在 `analysis\1`~`5`，**E2E 不再需要 zip** |
-| `MajdataX\` | 已部署桌面版（E2E 直接可用） | ✅ 已于 2026-09-10 删除；**恢复：复制 `src\MajdataViewX\Build\Win64\*` 到 `D:\Workspace\PMXA\MajdataX\`**（或 GitHub Release 解压，或重建部署） |
+| `MajdataX\` | 已部署桌面版（E2E 直接可用，168MB 运行时） | ❌ 建议保留（**2026-09-29 已恢复**；若丢失：复制 `src\MajdataViewX\Build\Win64\*` 的运行时文件回来，或 GitHub Release 解压，或重建部署） |
 | `build\` | 构建产物/日志/截图 | ✅ 已于 2026-09-10 删除（成品已入 GitHub Releases；下次构建自动重建；历史日志/截图现存于 `analysis\`） |
 | `backup\` | 旧桌面二进制备份 | ✅ 已删除 |
 | `astrodx-2.2.0.0023\` | AstroDX 参考副本 | ✅ 已删除（与 `src\astrodx` 重复） |
